@@ -1,0 +1,212 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * NyayaSahay design system — institutional indigo with brass accents.
+ * Headings use a serif face, body text a humanist sans.
+ * All colours are semantic tokens; never hardcode colours in components.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-sans: "Inter Tight", system-ui, sans-serif;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-brass: var(--brass);
+  --color-brass-foreground: var(--brass-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0.987 0.005 85);
+  --foreground: oklch(0.22 0.03 268);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 268);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 268);
+  --primary: oklch(0.39 0.13 272);
+  --primary-foreground: oklch(0.985 0.01 85);
+  --secondary: oklch(0.955 0.012 270);
+  --secondary-foreground: oklch(0.32 0.08 272);
+  --muted: oklch(0.955 0.008 85);
+  --muted-foreground: oklch(0.51 0.03 268);
+  --accent: oklch(0.94 0.03 270);
+  --accent-foreground: oklch(0.32 0.09 272);
+  --brass: oklch(0.68 0.1 78);
+  --brass-foreground: oklch(0.24 0.04 78);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.985 0.01 85);
+  --border: oklch(0.9 0.012 270);
+  --input: oklch(0.9 0.012 270);
+  --ring: oklch(0.39 0.13 272);
+  --chart-1: oklch(0.39 0.13 272);
+  --chart-2: oklch(0.68 0.1 78);
+  --chart-3: oklch(0.55 0.11 200);
+  --chart-4: oklch(0.6 0.13 30);
+  --chart-5: oklch(0.5 0.1 150);
+  --sidebar: oklch(0.975 0.008 270);
+  --sidebar-foreground: oklch(0.22 0.03 268);
+  --sidebar-primary: oklch(0.39 0.13 272);
+  --sidebar-primary-foreground: oklch(0.985 0.01 85);
+  --sidebar-accent: oklch(0.94 0.03 270);
+  --sidebar-accent-foreground: oklch(0.32 0.09 272);
+  --sidebar-border: oklch(0.9 0.012 270);
+  --sidebar-ring: oklch(0.39 0.13 272);
+}
+
+.dark {
+  --background: oklch(0.17 0.025 268);
+  --foreground: oklch(0.95 0.008 85);
+  --card: oklch(0.215 0.03 268);
+  --card-foreground: oklch(0.95 0.008 85);
+  --popover: oklch(0.215 0.03 268);
+  --popover-foreground: oklch(0.95 0.008 85);
+  --primary: oklch(0.72 0.11 275);
+  --primary-foreground: oklch(0.17 0.03 268);
+  --secondary: oklch(0.27 0.035 268);
+  --secondary-foreground: oklch(0.95 0.008 85);
+  --muted: oklch(0.26 0.03 268);
+  --muted-foreground: oklch(0.71 0.025 268);
+  --accent: oklch(0.3 0.045 272);
+  --accent-foreground: oklch(0.95 0.008 85);
+  --brass: oklch(0.76 0.11 80);
+  --brass-foreground: oklch(0.2 0.04 78);
+  --destructive: oklch(0.68 0.18 25);
+  --destructive-foreground: oklch(0.17 0.03 268);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.72 0.11 275);
+  --chart-1: oklch(0.72 0.11 275);
+  --chart-2: oklch(0.76 0.11 80);
+  --chart-3: oklch(0.68 0.1 200);
+  --chart-4: oklch(0.7 0.13 30);
+  --chart-5: oklch(0.66 0.1 150);
+  --sidebar: oklch(0.2 0.028 268);
+  --sidebar-foreground: oklch(0.95 0.008 85);
+  --sidebar-primary: oklch(0.72 0.11 275);
+  --sidebar-primary-foreground: oklch(0.17 0.03 268);
+  --sidebar-accent: oklch(0.3 0.045 272);
+  --sidebar-accent-foreground: oklch(0.95 0.008 85);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.72 0.11 275);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+  }
+}
+
+@utility paper {
+  background-image: radial-gradient(oklch(0.39 0.13 272 / 6%) 1px,
+      transparent 1px);
+  background-size: 22px 22px;
+}
+
+@utility prose-legal {
+  line-height: 1.7;
+
+  & h1,
+  & h2,
+  & h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    margin-top: 1.25em;
+    margin-bottom: 0.4em;
+  }
+
+  & p {
+    margin-bottom: 0.85em;
+  }
+
+  & ul,
+  & ol {
+    margin: 0.5em 0 0.9em 1.2em;
+  }
+
+  & ul {
+    list-style: disc;
+  }
+
+  & ol {
+    list-style: decimal;
+  }
+
+  & li {
+    margin-bottom: 0.3em;
+  }
+
+  & strong {
+    font-weight: 600;
+  }
+
+  & code {
+    font-size: 0.9em;
+    background: var(--color-muted);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+}
+
+/* Hide Lovable badge injected by the Lovable Vite plugin */
+#lovable-badge,
+.lovable-badge,
+[id^="lovable-badge"],
+[class*="lovable-badge"] {
+  display: none !important;
+}
