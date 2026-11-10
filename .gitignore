@@ -11,3 +11,5 @@ build
 venv
 .venv
 storage/
+*.db
+*.sqlite*

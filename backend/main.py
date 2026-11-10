@@ -62,13 +62,29 @@ from models import (
     DocumentAnalyzeRequest,
     DocumentGenerateRequest,
     ExportDocumentRequest,
+    DocumentEnhanceRequest,
+    DocumentRestoreRequest,
+    DocumentAuthenticityRequest,
+    DocumentCompareRequest,
+    DocumentSummarizeRequest,
+    DocumentQARequest,
 )
 from prompts import document_generate_prompt, legal_system_prompt
 from retrieval import retrieve_context
+from document_enhancement import enhance_document, restore_document_image
+from document_authenticity import assess_authenticity
+from document_comparison import compare_documents
+from document_intelligence import (
+    detect_document_intent,
+    analyse_document_comprehensive,
+    answer_document_question,
+)
 
 # ── File storage setup ───────────────────────────────────────────
 UPLOAD_DIR = Path(__file__).parent.parent / "storage" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+ENHANCED_DIR = Path(__file__).parent.parent / "storage" / "enhanced"
+ENHANCED_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── App setup ────────────────────────────────────────────────────
 
@@ -712,6 +728,176 @@ async def export_docx(req: ExportDocumentRequest):
             "Content-Disposition": f'attachment; filename="{filename}"',
         },
     )
+
+
+# ── Document Intelligence endpoints ──────────────────────────────
+
+
+@app.post("/api/document-intelligence/enhance")
+async def enhance_document_endpoint(req: DocumentEnhanceRequest):
+    """Enhance a document's text using LLM-based improvement."""
+    doc = get_document(req.documentId)
+    if not doc:
+        return JSONResponse(status_code=404, content={"error": "Document not found"})
+
+    try:
+        print(f"[enhance] Enhancing document: {doc['filename']} (mode={req.mode})")
+        result = await enhance_document(
+            doc["storedPath"], doc["mimeType"], req.mode, req.language
+        )
+        print(f"[enhance] Enhancement complete for: {doc['filename']}")
+        return {"id": req.documentId, "filename": doc["filename"], **result}
+
+    except Exception as e:
+        print(f"[enhance] ERROR: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e) or "Document enhancement failed."},
+        )
+
+
+@app.post("/api/document-intelligence/restore")
+async def restore_document_endpoint(req: DocumentRestoreRequest):
+    """Restore an old, faded, or damaged document."""
+    doc = get_document(req.documentId)
+    if not doc:
+        return JSONResponse(status_code=404, content={"error": "Document not found"})
+
+    try:
+        print(f"[restore] Restoring document: {doc['filename']}")
+        result = await restore_document_image(
+            doc["storedPath"], doc["mimeType"], req.language
+        )
+        print(f"[restore] Restoration complete for: {doc['filename']}")
+        return {"id": req.documentId, "filename": doc["filename"], **result}
+
+    except Exception as e:
+        print(f"[restore] ERROR: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e) or "Document restoration failed."},
+        )
+
+
+@app.post("/api/document-intelligence/authenticity")
+async def authenticity_document_endpoint(req: DocumentAuthenticityRequest):
+    """Assess the authenticity of a document."""
+    doc = get_document(req.documentId)
+    if not doc:
+        return JSONResponse(status_code=404, content={"error": "Document not found"})
+
+    try:
+        print(f"[authenticity] Assessing document: {doc['filename']}")
+        result = await assess_authenticity(
+            doc["storedPath"], doc["mimeType"], req.language
+        )
+        print(f"[authenticity] Assessment complete for: {doc['filename']}")
+        return {"id": req.documentId, "filename": doc["filename"], **result}
+
+    except Exception as e:
+        print(f"[authenticity] ERROR: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e) or "Authenticity assessment failed."},
+        )
+
+
+@app.post("/api/document-intelligence/compare")
+async def compare_documents_endpoint(req: DocumentCompareRequest):
+    """Compare two documents and identify differences."""
+    doc1 = get_document(req.documentId1)
+    doc2 = get_document(req.documentId2)
+    if not doc1:
+        return JSONResponse(status_code=404, content={"error": "First document not found"})
+    if not doc2:
+        return JSONResponse(status_code=404, content={"error": "Second document not found"})
+
+    try:
+        print(f"[compare] Comparing: {doc1['filename']} vs {doc2['filename']}")
+        result = await compare_documents(
+            doc1["storedPath"], doc1["mimeType"],
+            doc2["storedPath"], doc2["mimeType"],
+            req.language,
+        )
+        print(f"[compare] Comparison complete")
+        return {
+            "document1": {"id": req.documentId1, "filename": doc1["filename"]},
+            "document2": {"id": req.documentId2, "filename": doc2["filename"]},
+            **result,
+        }
+
+    except Exception as e:
+        print(f"[compare] ERROR: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e) or "Document comparison failed."},
+        )
+
+
+@app.post("/api/document-intelligence/summarize")
+async def summarize_document_endpoint(req: DocumentSummarizeRequest):
+    """Provide a comprehensive analysis and summary of a document."""
+    doc = get_document(req.documentId)
+    if not doc:
+        return JSONResponse(status_code=404, content={"error": "Document not found"})
+
+    try:
+        print(f"[summarize] Analyzing document: {doc['filename']}")
+        result = await analyse_document_comprehensive(
+            doc["storedPath"], doc["mimeType"], req.language
+        )
+        print(f"[summarize] Analysis complete for: {doc['filename']}")
+        return {"id": req.documentId, "filename": doc["filename"], **result}
+
+    except Exception as e:
+        print(f"[summarize] ERROR: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e) or "Document summarization failed."},
+        )
+
+
+@app.post("/api/document-intelligence/qa")
+async def document_qa_endpoint(req: DocumentQARequest):
+    """Answer a specific question about an uploaded document."""
+    doc = get_document(req.documentId)
+    if not doc:
+        return JSONResponse(status_code=404, content={"error": "Document not found"})
+
+    try:
+        print(f"[doc-qa] Question about {doc['filename']}: {req.question[:60]}...")
+        answer = await answer_document_question(
+            req.question, doc["storedPath"], doc["mimeType"], req.language
+        )
+        print(f"[doc-qa] Answer generated ({len(answer)} chars)")
+        return {
+            "id": req.documentId,
+            "filename": doc["filename"],
+            "question": req.question,
+            "answer": answer,
+        }
+
+    except Exception as e:
+        print(f"[doc-qa] ERROR: {e}")
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e) or "Could not answer the question."},
+        )
+
+
+@app.get("/api/document-intelligence/enhanced/{filename}")
+async def serve_enhanced_file(filename: str):
+    """Serve an enhanced or restored document file."""
+    file_path = ENHANCED_DIR / filename
+    if not file_path.exists() or not file_path.is_file():
+        return JSONResponse(status_code=404, content={"error": "Enhanced file not found"})
+    return FileResponse(str(file_path))
 
 
 # ── Health check ─────────────────────────────────────────────────

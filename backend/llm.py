@@ -189,6 +189,56 @@ async def classify_query(question: str, history: list[dict] | None = None) -> st
     request for it is wasteful on the free RPM quota.
     """
     q_lower = question.lower()
+
+    # ── Document intelligence intents (check before generic document_generate) ──
+
+    restore_indicators = (
+        "restore", "recover", "fix this document", "old document",
+        "faded", "blurred", "blurry", "unclear", "unreadable",
+        "damaged document", "poor quality", "improve scan",
+        "clean up", "scanned document", "old scan", "illegible",
+    )
+    if any(indicator in q_lower for indicator in restore_indicators):
+        return "document_restore"
+
+    enhance_indicators = (
+        "enhance", "improve", "rewrite", "polish", "refine",
+        "make it better", "make it professional", "make it formal",
+        "upgrade document", "improve this document", "enhance this",
+        "reformat", "restructure", "improve quality", "better version",
+    )
+    if any(indicator in q_lower for indicator in enhance_indicators):
+        return "document_enhance"
+
+    authenticity_indicators = (
+        "authentic", "genuine", "fake", "forged", "forgery",
+        "tampered", "suspicious", "verify document", "check authenticity",
+        "is this real", "is this genuine", "is this fake",
+        "document fraud", "verify this", "check if",
+    )
+    if any(indicator in q_lower for indicator in authenticity_indicators):
+        return "document_authenticity"
+
+    compare_indicators = (
+        "compare", "difference", "differences between",
+        "contrast", "what changed", "changes between",
+        "side by side", "compare these", "compare document",
+        "diff ", "versus", " vs ",
+    )
+    if any(indicator in q_lower for indicator in compare_indicators):
+        return "document_compare"
+
+    summarize_indicators = (
+        "summarize", "summarise", "summary", "key points",
+        "main points", "brief overview", "what does this say",
+        "tldr", "tl;dr", "gist of", "outline of",
+        "extract key", "important points",
+    )
+    if any(indicator in q_lower for indicator in summarize_indicators):
+        return "document_summarize"
+
+    # ── Existing intents ──
+
     document_indicators = (
         "draft ", "generate ", "create ", "write a ", "prepare ",
         "legal notice", "affidavit", "agreement", "application", "petition",

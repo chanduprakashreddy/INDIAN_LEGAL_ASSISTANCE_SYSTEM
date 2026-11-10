@@ -125,3 +125,85 @@ export type DocumentTypeId = (typeof DOCUMENT_TYPES)[number]["id"];
 export function documentTypeName(id: string): string {
   return DOCUMENT_TYPES.find((type) => type.id === id)?.name ?? id;
 }
+
+// ── Document Intelligence types ──────────────────────────────────
+
+export type EnhanceResult = {
+  id: string;
+  filename: string;
+  success: boolean;
+  enhanced_text: string;
+  original_text: string;
+  mode: string;
+  improvements: string[];
+};
+
+export type RestoreResult = {
+  id: string;
+  filename: string;
+  success: boolean;
+  restored_path?: string;
+  extracted_text: string;
+  quality_assessment: string;
+  improvements: string[];
+};
+
+export type AuthenticityFinding = {
+  category: string;
+  severity: string;
+  description: string;
+  details: string;
+};
+
+export type AuthenticityResult = {
+  id: string;
+  filename: string;
+  success: boolean;
+  overall_risk_level: string;
+  confidence: string;
+  findings: AuthenticityFinding[];
+  recommendations: string[];
+  metadata_analysis?: Record<string, unknown>;
+  structural_analysis?: Record<string, unknown>;
+  disclaimer: string;
+};
+
+export type CompareChange = {
+  type: string;
+  category: string;
+  description: string;
+  original?: string;
+  modified?: string;
+};
+
+export type CompareResult = {
+  document1: { id: string; filename: string };
+  document2: { id: string; filename: string };
+  success: boolean;
+  summary: string;
+  similarity_score: number;
+  changes: CompareChange[];
+  semantic_analysis: string;
+  statistics: Record<string, unknown>;
+};
+
+export type SummarizeResult = {
+  id: string;
+  filename: string;
+  success: boolean;
+  document_type?: string;
+  summary?: string;
+  key_entities?: string[];
+  obligations?: string[];
+  dates?: string[];
+  risks?: string[];
+  risk_analysis?: string;
+  recommendations?: string[];
+};
+
+export type DocumentQAResult = {
+  id: string;
+  filename: string;
+  question: string;
+  answer: string;
+};

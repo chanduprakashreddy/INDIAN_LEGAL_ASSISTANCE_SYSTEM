@@ -81,6 +81,11 @@ const QUERY_TYPE_LABEL: Record<string, string> = {
   personal_case: "⚖️ Personal Case Assistance",
   general_legal: "📖 General Legal Information",
   document_generate: "📄 Document Generation",
+  document_enhance: "✨ Document Enhancement",
+  document_restore: "🔄 Document Restoration",
+  document_authenticity: "🛡️ Authenticity Check",
+  document_compare: "🔀 Document Comparison",
+  document_summarize: "📋 Document Summary",
 };
 
 type PendingFile = {

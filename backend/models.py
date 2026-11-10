@@ -80,3 +80,93 @@ class DocumentAnalysis(BaseModel):
 class ExportDocumentRequest(BaseModel):
     content: str = Field(..., min_length=1, max_length=100000)
     title: str = Field(default="Legal Document")
+
+
+# ── Document Intelligence request models ─────────────────────────
+
+
+class DocumentEnhanceRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    mode: str = Field(default="professional")  # basic, professional, legal, advanced, restoration
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentRestoreRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentAuthenticityRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentCompareRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId1: str = Field(..., min_length=1)
+    documentId2: str = Field(..., min_length=1)
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentSummarizeRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    level: str = Field(default="detailed")  # brief, detailed, comprehensive
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentQARequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    question: str = Field(..., min_length=1, max_length=2000)
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentEnhanceRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    mode: str = Field(default="professional")  # basic, professional, legal, advanced, restoration
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentRestoreRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentAuthenticityRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentCompareRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId1: str = Field(..., min_length=1)
+    documentId2: str = Field(..., min_length=1)
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentSummarizeRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    level: str = Field(default="detailed")  # brief, detailed, comprehensive
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentQARequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    documentId: str = Field(..., min_length=1)
+    question: str = Field(..., min_length=1, max_length=2000)
+    language: str = Field(default="en", min_length=2, max_length=5)
+
+
+class DocumentGenerateFromChatRequest(BaseModel):
+    sessionId: str = Field(..., min_length=1)
+    message: str = Field(..., min_length=1, max_length=8000)
+    language: str = Field(default="en", min_length=2, max_length=5)
+    threadId: Optional[str] = None
