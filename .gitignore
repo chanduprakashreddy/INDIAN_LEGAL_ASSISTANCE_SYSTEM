@@ -10,6 +10,7 @@ build
 .supabase
 venv
 .venv
-storage/
+storage/logs/*.log
 *.db
-*.sqlite*
+backend/chat.db
+backend/storage/
