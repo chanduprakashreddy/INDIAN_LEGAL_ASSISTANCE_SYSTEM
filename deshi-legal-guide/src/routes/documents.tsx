@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Download, FileText, Loader2, Sparkles, Upload } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell, LanguagePicker } from "@/components/app-shell";
@@ -15,14 +15,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useSessionId } from "@/hooks/use-session";
-import {
-  analyseDocument,
-  enhanceDocumentScan,
-  generateDocument,
-  listDocuments,
-  updateGeneratedDocument,
-} from "@/lib/documents.functions";
 import { DOCUMENT_TYPES } from "@/lib/legal";
+
+const BACKEND_URL = (import.meta.env["VITE_BACKEND_URL"] as string | undefined) || "http://localhost:8000";
 
 export const Route = createFileRoute("/documents")({
   head: () => ({
@@ -53,44 +48,70 @@ function download(name: string, content: string) {
   URL.revokeObjectURL(url);
 }
 
-function readAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("The file could not be read."));
-    reader.readAsDataURL(file);
-  });
-}
+type DocumentAnalysis = {
+  documentType: string;
+  summary: string;
+  parties: string[];
+  obligations: string[];
+  dates: string[];
+  risks: string[];
+  nextSteps: string[];
+  quality: string;
+  cleanedText?: string | null;
+};
+
+type StoredDocument = {
+  id: string;
+  filename: string;
+  mimeType: string;
+  fileSize: number;
+  analysis: DocumentAnalysis | null;
+  cleanedText: string | null;
+  createdAt: string;
+  threadId: string | null;
+};
 
 function GenerateTab() {
   const sessionId = useSessionId();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const [typeId, setTypeId] = useState<string>(DOCUMENT_TYPES[0].id);
   const [fields, setFields] = useState<Record<string, string>>({});
+  const [freeText, setFreeText] = useState("");
   const [draftText, setDraftText] = useState("");
-  const [draftId, setDraftId] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const type = DOCUMENT_TYPES.find((entry) => entry.id === typeId)!;
 
-  const generate = useMutation({
-    mutationFn: () =>
-      generateDocument({
-        data: { sessionId, docType: typeId, language, fields },
-      }),
-    onSuccess: (result) => {
-      setDraftText(result.content);
-      setDraftId(result.id);
-      toast.success("Draft ready. Review and edit before you use it.");
-    },
-    onError: (error) => toast.error(error instanceof Error ? error.message : "Drafting failed."),
-  });
+  const handleGenerate = useCallback(async () => {
+    if (!sessionId) return;
+    setGenerating(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/generate-document`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          docType: type.name,
+          language,
+          fields,
+          freeText: freeText || undefined,
+        }),
+      });
 
-  const save = useMutation({
-    mutationFn: () =>
-      updateGeneratedDocument({ data: { sessionId, id: draftId!, content: draftText } }),
-    onSuccess: () => toast.success("Saved."),
-    onError: () => toast.error("The draft could not be saved."),
-  });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: "Generation failed" }));
+        throw new Error(err.error || "Generation failed");
+      }
+
+      const result = await response.json();
+      setDraftText(result.content);
+      toast.success("Draft ready. Review and edit before you use it.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Drafting failed.");
+    } finally {
+      setGenerating(false);
+    }
+  }, [sessionId, type.name, language, fields, freeText]);
 
   const missing = type.fields.filter((field) => field.required && !fields[field.name]?.trim());
 
@@ -98,7 +119,7 @@ function GenerateTab() {
     <div className="grid gap-6 lg:grid-cols-[22rem_1fr]">
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-base">{t("documents.generate")}</CardTitle>
+          <CardTitle className="font-serif text-base">Generate Document</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
@@ -112,11 +133,10 @@ function GenerateTab() {
                     setTypeId(entry.id);
                     setFields({});
                   }}
-                  className={`rounded-md border p-3 text-left text-sm transition-colors ${
-                    entry.id === typeId
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:bg-accent/50"
-                  }`}
+                  className={`rounded-md border p-3 text-left text-sm transition-colors ${entry.id === typeId
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:bg-accent/50"
+                    }`}
                 >
                   <span className="font-medium">{entry.name}</span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">{entry.blurb}</span>
@@ -152,14 +172,25 @@ function GenerateTab() {
                 )}
               </div>
             ))}
+
+            <div className="grid gap-1.5 border-t border-border pt-3">
+              <Label htmlFor="freeText">Additional instructions (optional)</Label>
+              <Textarea
+                id="freeText"
+                rows={3}
+                placeholder="Any special requirements or additional details..."
+                value={freeText}
+                onChange={(e) => setFreeText(e.target.value)}
+              />
+            </div>
           </div>
 
           <Button
             className="w-full"
-            disabled={generate.isPending || missing.length > 0 || !sessionId}
-            onClick={() => generate.mutate()}
+            disabled={generating || missing.length > 0 || !sessionId}
+            onClick={handleGenerate}
           >
-            {generate.isPending ? (
+            {generating ? (
               <>
                 <Loader2 className="size-4 animate-spin" /> Drafting…
               </>
@@ -180,15 +211,12 @@ function GenerateTab() {
           <CardTitle className="font-serif text-base">Draft</CardTitle>
           {draftText && (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => void save.mutate()}>
-                {t("common.save")}
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => download(`${type.name}.txt`, draftText)}
               >
-                <Download className="size-4" /> {t("common.download")}
+                <Download className="size-4" /> Download
               </Button>
             </div>
           )}
@@ -217,41 +245,60 @@ function GenerateTab() {
 
 function ExplainTab() {
   const sessionId = useSessionId();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const queryClient = useQueryClient();
   const [pending, setPending] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const documentsQuery = useQuery({
     queryKey: ["documents", sessionId],
-    queryFn: () => listDocuments({ data: { sessionId } }),
+    queryFn: async (): Promise<StoredDocument[]> => {
+      const response = await fetch(
+        `${BACKEND_URL}/api/documents?sessionId=${encodeURIComponent(sessionId)}`,
+      );
+      if (!response.ok) throw new Error("Could not load documents");
+      return response.json();
+    },
     enabled: Boolean(sessionId),
   });
 
-  const enhance = useMutation({
-    mutationFn: (documentId: string) =>
-      enhanceDocumentScan({ data: { sessionId, documentId } }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["documents", sessionId] });
-      toast.success("Enhanced copy ready.");
-    },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Enhancement failed."),
-  });
-
-  const onFile = async (file: File | undefined) => {
+  const onFile = useCallback(async (file: File | undefined) => {
     if (!file || !sessionId) return;
     setPending(true);
     try {
-      const dataUrl = await readAsDataUrl(file);
-      await analyseDocument({
-        data: {
-          sessionId,
-          fileName: file.name,
-          mimeType: file.type || "application/octet-stream",
-          base64: dataUrl,
-          language,
-        },
+      // Step 1: Upload
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("sessionId", sessionId);
+
+      const uploadResponse = await fetch(`${BACKEND_URL}/api/upload`, {
+        method: "POST",
+        body: formData,
       });
+
+      if (!uploadResponse.ok) {
+        const err = await uploadResponse.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error(err.error || "Upload failed");
+      }
+
+      const uploadResult = await uploadResponse.json();
+
+      // Step 2: Analyze
+      const analyzeResponse = await fetch(`${BACKEND_URL}/api/analyze-document`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          documentId: uploadResult.id,
+          language,
+        }),
+      });
+
+      if (!analyzeResponse.ok) {
+        const err = await analyzeResponse.json().catch(() => ({ error: "Analysis failed" }));
+        throw new Error(err.error || "Analysis failed");
+      }
+
       await queryClient.invalidateQueries({ queryKey: ["documents", sessionId] });
       toast.success("Document explained.");
     } catch (error) {
@@ -259,19 +306,20 @@ function ExplainTab() {
     } finally {
       setPending(false);
     }
-  };
+  }, [sessionId, language, queryClient]);
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="font-serif text-base">{t("documents.explain")}</CardTitle>
+          <CardTitle className="font-serif text-base">Explain a Document</CardTitle>
         </CardHeader>
         <CardContent>
           <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 px-6 py-10 text-center transition-colors hover:bg-muted/60">
             <input
+              ref={fileInputRef}
               type="file"
-              accept="image/*,application/pdf"
+              accept="image/*,application/pdf,.doc,.docx,.txt"
               className="hidden"
               disabled={pending}
               onChange={(event) => void onFile(event.target.files?.[0])}
@@ -296,43 +344,11 @@ function ExplainTab() {
           <Card key={document.id}>
             <CardHeader className="flex-row items-start justify-between gap-3">
               <div className="min-w-0">
-                <CardTitle className="truncate font-serif text-base">{document.title}</CardTitle>
+                <CardTitle className="truncate font-serif text-base">{document.filename}</CardTitle>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {document.analysis?.documentType ?? "Document"} ·{" "}
                   {new Date(document.createdAt).toLocaleString("en-IN")}
                 </p>
-              </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
-                {document.fileUrl && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={document.fileUrl} target="_blank" rel="noreferrer">
-                      Original
-                    </a>
-                  </Button>
-                )}
-                {document.enhancedUrl ? (
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={document.enhancedUrl} target="_blank" rel="noreferrer">
-                      Enhanced
-                    </a>
-                  </Button>
-                ) : (
-                  !document.mimeType?.includes("pdf") && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={enhance.isPending}
-                      onClick={() => enhance.mutate(document.id)}
-                    >
-                      {enhance.isPending ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="size-4" />
-                      )}
-                      {t("documents.enhance")}
-                    </Button>
-                  )
-                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -378,9 +394,9 @@ function ExplainTab() {
                     variant="outline"
                     size="sm"
                     className="mt-3"
-                    onClick={() => download(`${document.title}.txt`, document.cleanedText!)}
+                    onClick={() => download(`${document.filename}.txt`, document.cleanedText!)}
                   >
-                    <Download className="size-4" /> {t("common.download")}
+                    <Download className="size-4" /> Download
                   </Button>
                 </details>
               )}
@@ -398,23 +414,24 @@ function ExplainTab() {
 }
 
 function DocumentsPage() {
-  const { t } = useLanguage();
-
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-semibold">{t("nav.documents")}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{t("disclaimer.short")}</p>
+            <h1 className="text-3xl font-semibold">Documents</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Upload documents for AI analysis or generate legal documents with AI assistance.
+              These features are also available in the Chat window.
+            </p>
           </div>
           <LanguagePicker />
         </div>
 
         <Tabs defaultValue="generate" className="mt-8">
           <TabsList>
-            <TabsTrigger value="generate">{t("documents.generate")}</TabsTrigger>
-            <TabsTrigger value="explain">{t("documents.explain")}</TabsTrigger>
+            <TabsTrigger value="generate">Generate</TabsTrigger>
+            <TabsTrigger value="explain">Explain</TabsTrigger>
           </TabsList>
           <TabsContent value="generate" className="mt-6">
             <GenerateTab />

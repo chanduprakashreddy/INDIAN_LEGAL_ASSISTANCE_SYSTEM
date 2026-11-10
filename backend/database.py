@@ -50,6 +50,23 @@ def init_db() -> None:
         );
         CREATE INDEX IF NOT EXISTS idx_messages_thread
             ON chat_messages(thread_id, created_at ASC);
+
+        CREATE TABLE IF NOT EXISTS uploaded_documents (
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            thread_id TEXT,
+            filename TEXT NOT NULL,
+            stored_path TEXT NOT NULL,
+            mime_type TEXT NOT NULL,
+            file_size INTEGER NOT NULL DEFAULT 0,
+            analysis TEXT,
+            cleaned_text TEXT,
+            created_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_uploads_session
+            ON uploaded_documents(session_id, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_uploads_thread
+            ON uploaded_documents(thread_id, created_at ASC);
         """
     )
     conn.commit()
@@ -217,3 +234,117 @@ def get_thread_title(thread_id: str) -> Optional[str]:
     row = conn.execute("SELECT title FROM chat_threads WHERE id = ?", (thread_id,)).fetchone()
     conn.close()
     return row["title"] if row else None
+
+
+# ── Document operations ────────────────────────────────────────────
+
+
+def save_uploaded_document(
+    session_id: str,
+    filename: str,
+    stored_path: str,
+    mime_type: str,
+    file_size: int,
+    thread_id: Optional[str] = None,
+    analysis: Optional[dict] = None,
+    cleaned_text: Optional[str] = None,
+) -> str:
+    doc_id = str(uuid.uuid4())
+    conn = _connect()
+    conn.execute(
+        """INSERT INTO uploaded_documents
+           (id, session_id, thread_id, filename, stored_path, mime_type, file_size,
+            analysis, cleaned_text, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            doc_id, session_id, thread_id, filename, stored_path, mime_type,
+            file_size, json.dumps(analysis) if analysis else None,
+            cleaned_text, _now(),
+        ),
+    )
+    conn.commit()
+    conn.close()
+    return doc_id
+
+
+def update_document_analysis(
+    doc_id: str,
+    analysis: dict,
+    cleaned_text: Optional[str] = None,
+) -> None:
+    conn = _connect()
+    conn.execute(
+        "UPDATE uploaded_documents SET analysis = ?, cleaned_text = ? WHERE id = ?",
+        (json.dumps(analysis), cleaned_text, doc_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_document(doc_id: str) -> Optional[dict]:
+    conn = _connect()
+    row = conn.execute(
+        "SELECT * FROM uploaded_documents WHERE id = ?", (doc_id,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return None
+    return {
+        "id": row["id"],
+        "sessionId": row["session_id"],
+        "threadId": row["thread_id"],
+        "filename": row["filename"],
+        "storedPath": row["stored_path"],
+        "mimeType": row["mime_type"],
+        "fileSize": row["file_size"],
+        "analysis": json.loads(row["analysis"]) if row["analysis"] else None,
+        "cleanedText": row["cleaned_text"],
+        "createdAt": row["created_at"],
+    }
+
+
+def get_thread_documents(thread_id: str) -> list[dict]:
+    conn = _connect()
+    rows = conn.execute(
+        """SELECT id, filename, mime_type, analysis, cleaned_text, created_at
+           FROM uploaded_documents WHERE thread_id = ?
+           ORDER BY created_at ASC""",
+        (thread_id,),
+    ).fetchall()
+    conn.close()
+    return [
+        {
+            "id": r["id"],
+            "filename": r["filename"],
+            "mimeType": r["mime_type"],
+            "analysis": json.loads(r["analysis"]) if r["analysis"] else None,
+            "cleanedText": r["cleaned_text"],
+            "createdAt": r["created_at"],
+        }
+        for r in rows
+    ]
+
+
+def list_session_documents(session_id: str, limit: int = 50) -> list[dict]:
+    conn = _connect()
+    rows = conn.execute(
+        """SELECT id, thread_id, filename, mime_type, file_size, analysis,
+                  cleaned_text, created_at
+           FROM uploaded_documents WHERE session_id = ?
+           ORDER BY created_at DESC LIMIT ?""",
+        (session_id, limit),
+    ).fetchall()
+    conn.close()
+    return [
+        {
+            "id": r["id"],
+            "threadId": r["thread_id"],
+            "filename": r["filename"],
+            "mimeType": r["mime_type"],
+            "fileSize": r["file_size"],
+            "analysis": json.loads(r["analysis"]) if r["analysis"] else None,
+            "cleanedText": r["cleaned_text"],
+            "createdAt": r["created_at"],
+        }
+        for r in rows
+    ]

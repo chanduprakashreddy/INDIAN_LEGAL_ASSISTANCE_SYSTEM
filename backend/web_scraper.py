@@ -85,11 +85,13 @@ async def scrape_legal_info(query: str) -> list[Citation]:
 
         soup = BeautifulSoup(response.text, "lxml")
 
-        # Indian Kanoon wraps each result in a div with class "result"
-        result_divs = soup.select("div.result")
+        # Indian Kanoon changed its result cards from ``div.result`` to
+        # ``article.result``.  Select by class rather than tag so either
+        # layout continues to work.
+        result_divs = soup.select(".result")
         if not result_divs:
             # Fallback: try finding result titles directly
-            result_divs = soup.select("div.result_title")
+            result_divs = soup.select(".result_title")
             if not result_divs:
                 print("[web_scraper] No results found on Indian Kanoon")
                 return []
@@ -99,7 +101,11 @@ async def scrape_legal_info(query: str) -> list[Citation]:
         for i, div in enumerate(result_divs[:MAX_RESULTS]):
             try:
                 # Title link
-                title_tag = div.select_one("a.result_title") or div.select_one("a")
+                title_tag = (
+                    div.select_one(".result_title a")
+                    or div.select_one("a[href*='/doc']")
+                    or div.select_one("a")
+                )
                 if not title_tag:
                     continue
 

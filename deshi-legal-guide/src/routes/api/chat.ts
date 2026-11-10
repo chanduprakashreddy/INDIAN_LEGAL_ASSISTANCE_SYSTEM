@@ -2,10 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 
 /**
  * Chat API route — proxies requests to the Python FastAPI backend.
- * The backend handles RAG retrieval (ChromaDB + BM25) and LLM streaming.
+ * The backend handles RAG retrieval (ChromaDB + BM25), query classification,
+ * document analysis, and LLM streaming.
  */
 
-// Server-side code reads env vars directly (not VITE_ prefixed)
 const BACKEND_URL =
   process.env["VITE_BACKEND_URL"] ||
   process.env["BACKEND_URL"] ||
@@ -53,7 +53,6 @@ export const Route = createFileRoute("/api/chat")({
 
           console.log("[chat proxy] Streaming response from backend...");
 
-          // Pipe the SSE stream from the backend directly to the frontend
           return new Response(backendResponse.body, {
             status: 200,
             headers: {

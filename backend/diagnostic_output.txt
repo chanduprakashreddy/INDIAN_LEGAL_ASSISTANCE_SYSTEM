@@ -1,0 +1,247 @@
+Failed to send telemetry event ClientStartEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event CollectionGetEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+Failed to send telemetry event CollectionQueryEvent: capture() takes 1 positional argument but 3 were given
+
+RETRIEVAL DIAGNOSTIC TEST
+
+======================================================================
+  TEST 1: ChromaDB Dense Search
+======================================================================
+[retrieval] ChromaDB loaded from ..\storage\derived\chroma
+[retrieval] Collection names found: ['legal_qa', 'bns', 'bsa', 'supreme_court', 'constitution', 'central_acts', 'bnss']
+[retrieval] Loaded 7 collections
+
+  Collections loaded: 0
+
+  Query: What is Article 21 of the Indian Constitution?
+  -> 3 results
+    [1] score=0.5311 | collection=central_acts | act=central_acts
+        section=None | url=None
+        content=any transferee with notice of the non-payment,] for the amount of the purchase-money, or any part th...
+    [2] score=0.5279 | collection=central_acts | act=central_acts
+        section=None | url=None
+        content=obliged to make compensation to C for the breach of his contract. A must make compensation to B for ...
+    [3] score=0.5271 | collection=central_acts | act=central_acts
+        section=None | url=None
+        content=written demand is withdrawn or attachment of the property is lifted or the property is sold and the ...
+
+  Query: Section 302 of BNS
+  -> 3 results
+    [1] score=0.5241 | collection=central_acts | act=central_acts
+        section=None | url=None
+        content=granted unless the State Government being satisfied that such destruction, exploitation or removal o...
+    [2] score=0.5221 | collection=central_acts | act=central_acts
+        section=None | url=None
+        content=goods from or during such use of them. 1. The responsibility of the Trustees of the Port of Madras c...
+    [3] score=0.5212 | collection=central_acts | act=central_acts
+        section=None | url=None
+        content=has been accomplished. 1161. BaileeΓÇÖs responsibility when goods are not duly returned.ΓÇöIf, by the de...
+
+  Query: bail provisions under BNSS
+  -> 3 results
+    [1] score=0.5273 | collection=central_acts | act=central_acts
+        section=None | url=None
+        content=obliged to make compensation to C for the breach of his contract. A must make compensation to B for ...
+    [2] score=0.5238 | collection=central_acts | act=central_acts
+        section=None | url=None
+        content=sold; (d) he must, in the absence of a contract to the contrary, make such necessary repairs of the ...
+    [3] score=0.5216 | collection=supreme_court | act=supreme_court
+        section=None | url=None
+        content=and conditions in Policy No. 832471906. Obviously, the District Forum took note of the rival factual...
+
+  Query: right to information act
+  -> 3 results
+    [1] score=0.5203 | collection=supreme_court | act=supreme_court
+        section=None | url=None
+        content=solely depending upon an average of the multiple sale deeds produced before us. Despite the Responde...
+    [2] score=0.5200 | collection=supreme_court | act=supreme_court
+        section=None | url=None
+        content=to seek formal instructions in this regard. Respondents meanwhile filed a formal undertaking stating...
+    [3] score=0.5194 | collection=supreme_court | act=supreme_court
+        section=None | url=None
+        content=study and chose Doloo as the site for a new Greenfield Airport on 1ΓÇ£AAIΓÇ¥2 land admeasuring approxima...
+
+======================================================================
+  TEST 2: BM25 Keyword Search
+======================================================================
+[retrieval] BM25 index loaded: bnss_bm25 (242 documents)
+[retrieval] BM25 index loaded: bns_bm25 (230 documents)
+[retrieval] BM25 index loaded: bsa_bm25 (50 documents)
+[retrieval] BM25 index loaded: central_acts_bm25 (1428 documents)
+[retrieval] BM25 index loaded: constitution_bm25 (565 documents)
+[retrieval] BM25 index loaded: legal_qa_bm25 (13922 documents)
+[retrieval] BM25 index loaded: supreme_court_bm25 (28511 documents)
+
+  BM25 indexes loaded: 7
+    - bnss_bm25: 242 documents
+    - bns_bm25: 230 documents
+    - bsa_bm25: 50 documents
+    - central_acts_bm25: 1428 documents
+    - constitution_bm25: 565 documents
+    - legal_qa_bm25: 13922 documents
+    - supreme_court_bm25: 28511 documents
+
+  Query: What is Article 21 of the Indian Constitution?
+  -> 3 results
+    [1] score=29.7428 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=None | url=None
+        content=not only the language is different, but the entire political conditions and constitutional set-up ar...
+    [2] score=29.0675 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=21 | url=None
+        content=the right of motion and locomotion in foreign land. thus in so far as an indian citizen is concerned...
+    [3] score=29.0387 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=None | url=None
+        content=co-extensive rights, outside the constitution, are necessarily excluded by their recognition as or m...
+
+  Query: Section 302 of BNS
+  -> 3 results
+    [1] score=15.1897 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=None | url=None
+        content=to books on medical jurisprudence shows that there are many factors affecting one's digestion, and c...
+    [2] score=15.0224 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=None | url=None
+        content=at the date of the repeal, and the rights now claimed (i} 1952 s.c.r. 43, 52. ,-., i ΓÇó the collector...
+    [3] score=15.0027 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=None | url=None
+        content=appeal no. 441 of 1976 is filed by the state of maharashtra against the acquittal of accused nos. 1 ...
+
+  Query: bail provisions under BNSS
+  -> 3 results
+    [1] score=17.3036 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=None | url=None
+        content=punishment of a convict. the remission can be criminal appeal @ special leave petition (crl.) no.616...
+    [2] score=17.2147 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=432 | url=None
+        content=under sub┬¡section (3) of section 432 of the crpc or sub┬¡section (3) of section 473 of the bnss, it r...
+    [3] score=17.1795 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=None | url=None
+        content=to be decided in the facts of each case. every case of breach cannot invite cancellation of the orde...
+
+  Query: right to information act
+  -> 3 results
+    [1] score=21.2644 | collection=legal_qa_bm25 | act=Legal Q&A Database
+        section=None | url=None
+        content=question: how did the court reconcile the right to information act with the official secrets act in ...
+    [2] score=18.9951 | collection=legal_qa_bm25 | act=Legal Q&A Database
+        section=None | url=None
+        content=question: what did the court state about the relevance of public interest in the context of the righ...
+    [3] score=18.1346 | collection=supreme_court_bm25 | act=Supreme Court Judgment
+        section=None | url=None
+        content=a right to have his (i) a.t.r. 1965 mad. 79. objection heard and considered, but there is no prohibi...
+
+======================================================================
+  TEST 3: Full Hybrid Retrieval (BM25 + ChromaDB + RRF)
+======================================================================
+
+  Query: What is Article 21 of the Indian Constitution?
+[retrieval] Detected target collections: ['constitution']
+[retrieval] Step 1: Searching LOCAL ChromaDB vector database...
+[retrieval]   ΓåÆ ChromaDB returned 8 results
+[retrieval] Step 2: Searching LOCAL BM25 keyword indexes...
+[retrieval]   ΓåÆ BM25 returned 4 results
+[retrieval] Γ£à LOCAL DATABASE has 8 confident results
+[retrieval]   [1] collection=constitution, act=constitution, score=87.8044
+[retrieval]   [2] collection=constitution, act=constitution, score=53.7603
+[retrieval]   [3] collection=supreme_court_bm25, act=Supreme Court Judgment, score=29.7428
+  -> Grounding: corpus
+  -> Citations: 8
+    [1] actName=constitution | section=None | year=None
+        origin=corpus | score=87.8044
+        sourceUrl=None
+        excerpt=(d) the extinguishment or modification of any rights of managing agents, secretaries and treasurers, managing directors,...
+    [2] actName=constitution | section=None | year=None
+        origin=corpus | score=53.7603
+        sourceUrl=None
+        excerpt=by uniting any territory to a part of any State; (b) increase the area of any State; (c) diminish the area of any State;...
+    [3] actName=Supreme Court Judgment | section=None | year=None
+        origin=corpus | score=29.7428
+        sourceUrl=None
+        excerpt=not only the language is different, but the entire political conditions and constitutional set-up are dissimilar. in the...
+  OK: Citations look good for display
+
+  Query: Section 302 of BNS
+[retrieval] Step 1: Searching LOCAL ChromaDB vector database...
+[retrieval]   ΓåÆ ChromaDB returned 8 results
+[retrieval] Step 2: Searching LOCAL BM25 keyword indexes...
+[retrieval]   ΓåÆ BM25 returned 8 results
+[retrieval] Γ£à LOCAL DATABASE has 8 confident results
+[retrieval]   [1] collection=central_acts, act=central_acts, score=15.1897
+[retrieval]   [2] collection=supreme_court_bm25, act=Supreme Court Judgment, score=15.1897
+[retrieval]   [3] collection=central_acts, act=central_acts, score=14.9447
+  -> Grounding: corpus
+  -> Citations: 8
+    [1] actName=central_acts | section=None | year=None
+        origin=corpus | score=15.1897
+        sourceUrl=None
+        excerpt=granted unless the State Government being satisfied that such destruction, exploitation or removal of wildlife from the ...
+    [2] actName=Supreme Court Judgment | section=None | year=None
+        origin=corpus | score=15.1897
+        sourceUrl=None
+        excerpt=to books on medical jurisprudence shows that there are many factors affecting one's digestion, and cases were cited befo...
+    [3] actName=central_acts | section=None | year=None
+        origin=corpus | score=14.9447
+        sourceUrl=None
+        excerpt=goods from or during such use of them. 1. The responsibility of the Trustees of the Port of Madras constituted under the...
+  OK: Citations look good for display
+
+  Query: bail provisions under BNSS
+[retrieval] Detected target collections: ['bnss']
+[retrieval] Step 1: Searching LOCAL ChromaDB vector database...
+[retrieval]   ΓåÆ ChromaDB returned 8 results
+[retrieval] Step 2: Searching LOCAL BM25 keyword indexes...
+[retrieval]   ΓåÆ BM25 returned 8 results
+[retrieval] Γ£à LOCAL DATABASE has 8 confident results
+[retrieval]   [1] collection=bnss, act=bnss, score=17.3036
+[retrieval]   [2] collection=supreme_court_bm25, act=Supreme Court Judgment, score=17.3036
+[retrieval]   [3] collection=bnss, act=bnss, score=17.0245
+  -> Grounding: corpus
+  -> Citations: 8
+    [1] actName=bnss | section=None | year=None
+        origin=corpus | score=17.3036
+        sourceUrl=None
+        excerpt=issue of the proclamation. (2) Such order shall authorise the attachment of any property belonging to such person within...
+    [2] actName=Supreme Court Judgment | section=None | year=None
+        origin=corpus | score=17.3036
+        sourceUrl=None
+        excerpt=punishment of a convict. the remission can be criminal appeal @ special leave petition (crl.) no.6166 of 2023 page 14 of...
+    [3] actName=bnss | section=None | year=None
+        origin=corpus | score=17.0245
+        sourceUrl=None
+        excerpt=of attachment directing that such property shall not be transferred or otherwise dealt with, except with the prior permi...
+  OK: Citations look good for display
+
+  Query: right to information act
+[retrieval] Detected target collections: ['central_acts']
+[retrieval] Step 1: Searching LOCAL ChromaDB vector database...
+[retrieval]   ΓåÆ ChromaDB returned 8 results
+[retrieval] Step 2: Searching LOCAL BM25 keyword indexes...
+[retrieval]   ΓåÆ BM25 returned 6 results
+[retrieval] Γ£à LOCAL DATABASE has 8 confident results
+[retrieval]   [1] collection=central_acts, act=central_acts, score=21.2644
+[retrieval]   [2] collection=legal_qa_bm25, act=Legal Q&A Database, score=21.2644
+[retrieval]   [3] collection=central_acts, act=central_acts, score=20.9214
+  -> Grounding: corpus
+  -> Citations: 8
+    [1] actName=central_acts | section=None | year=None
+        origin=corpus | score=21.2644
+        sourceUrl=None
+        excerpt=as may be practicable, in the manner required by Section 21; (b) where such written demand is withdrawn or attachment of...
+    [2] actName=Legal Q&A Database | section=None | year=None
+        origin=corpus | score=21.2644
+        sourceUrl=None
+        excerpt=question: how did the court reconcile the right to information act with the official secrets act in this case? answer: t...
+    [3] actName=central_acts | section=None | year=None
+        origin=corpus | score=20.9214
+        sourceUrl=None
+        excerpt=being houses in towns, and lands by reference to a Government map or survey, the1[State Government] may, by rule made un...
+  OK: Citations look good for display
+
+======================================================================
+  DIAGNOSTIC COMPLETE
+======================================================================
